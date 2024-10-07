@@ -79,3 +79,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.target_arch }}-${{ matrix.os }}-${{ matrix.compiler }}
+          path: .
+          retention-days: 10
+          overwrite: true

@@ -47,16 +47,11 @@ jobs:
       - name: trigger
         run: |
           echo github_repository=${{ github.repository }}
-          echo ${{ github }}
-          echo ${{ inputs }}
-          echo ${{ env }}
-          echo ${{ job }}
-          echo ${{ vars }}
       - name: checkout kbsd
         uses: actions/checkout@v4
         with:
           ref: kbsd
-          path: kbsd
+          path: ../kbsd
       - name: checkout 14.1
         uses: actions/checkout@v4
         with:

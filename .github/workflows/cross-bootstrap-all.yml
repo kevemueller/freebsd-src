@@ -71,7 +71,6 @@ jobs:
           brew install ${{ matrix.pkgs }} || true
       - name: create environment
         run: |
-          echo "BMAKE=\"${{ matrix.bmake }}\"" >> $GITHUB_ENV
           echo "CC=${{ matrix.llvm-bindir }}/clang" >> $GITHUB_ENV
           echo "CXX=${{ matrix.llvm-bindir }}/clang++" >> $GITHUB_ENV
           echo "CPP=${{ matrix.llvm-bindir }}/clang-cpp" >> $GITHUB_ENV
@@ -90,7 +89,7 @@ jobs:
           echo Running on $(uname -a)
           echo "CWD = $PWD"
           echo "GITHUB_WORKSPACE = $GITHUB_WORKSPACE"
-          echo Using BMAKE=${BMAKE}
+          echo "Usig bmake as ${{ matrix.bmake }}"
           echo Using CC=${CC}
           echo Using LD=${LD}
           echo Using XCC=${XCC}
@@ -106,12 +105,12 @@ jobs:
       
       - name: make kernel-toolchain
         working-directory: ./src
-        run: ${BMAKE} TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} -s -j$NPROC kernel-toolchain  -DWITH_DISK_IMAGE_TOOLS_BOOTSTRAP
+        run: ${matrix.bmake} TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} -s -j$NPROC kernel-toolchain  -DWITH_DISK_IMAGE_TOOLS_BOOTSTRAP
       # - name: make buildworld
       #   run: ${BMAKE} TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} buildworld -s -j$NPROC $EXTRA_MAKE_ARGS
       - name: make buildkernel
         working-directory: ./src
-        run: ${BMAKE} TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} -s -j$NPROC buildkernel KERNCONF=GENERIC NO_MODULES=yes $EXTRA_MAKE_ARGS
+        run: ${matrix.bmake} TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} -s -j$NPROC buildkernel KERNCONF=GENERIC NO_MODULES=yes $EXTRA_MAKE_ARGS
     
       - name: tar build-artefacts
         run: tar -cvf build-${{ matrix.target_arch }}-${{ matrix.os }}-${{ matrix.compiler }}.tar -C ../build .

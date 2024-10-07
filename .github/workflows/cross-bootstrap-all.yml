@@ -2,10 +2,14 @@ name: Cross-build All
 
 on:
   push:
-    branches: [ 'releng/14.1', 'kbsd' ]
+    branches:
+      - 'releng/14.1'
+      - kbsd
   pull_request:
-    branches: [ 'releng/14.1', 'kbsd' ]
-  workflow_dispatch:
+    branches:
+      - 'releng/14.1'
+      - kbsd
+#  workflow_dispatch:
 
 permissions:
   contents: read

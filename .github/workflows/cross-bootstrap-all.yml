@@ -105,12 +105,12 @@ jobs:
       
       - name: make kernel-toolchain
         working-directory: ./src
-        run: ${matrix.bmake} TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} -s -j$NPROC kernel-toolchain  -DWITH_DISK_IMAGE_TOOLS_BOOTSTRAP
+        run: ${{matrix.bmake}} TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} -s -j$NPROC kernel-toolchain  -DWITH_DISK_IMAGE_TOOLS_BOOTSTRAP
       # - name: make buildworld
       #   run: ${BMAKE} TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} buildworld -s -j$NPROC $EXTRA_MAKE_ARGS
       - name: make buildkernel
         working-directory: ./src
-        run: ${matrix.bmake} TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} -s -j$NPROC buildkernel KERNCONF=GENERIC NO_MODULES=yes $EXTRA_MAKE_ARGS
+        run: ${{ matrix.bmake }} TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} -s -j$NPROC buildkernel KERNCONF=GENERIC NO_MODULES=yes $EXTRA_MAKE_ARGS
     
       - name: tar build-artefacts
         run: tar -cvf build-${{ matrix.target_arch }}-${{ matrix.os }}-${{ matrix.compiler }}.tar -C ../build .

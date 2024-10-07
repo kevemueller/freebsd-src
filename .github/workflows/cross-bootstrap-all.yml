@@ -51,11 +51,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: kbsd
-          path: ../kbsd
+          path: kbsd
       - name: checkout 14.1
         uses: actions/checkout@v4
         with:
           ref: 'releng/14.1'
+          path: src
       - name: install packages (Ubuntu)
         if: runner.os == 'Linux'
         run: |
@@ -87,16 +88,19 @@ jobs:
           find .. -type d -maxdepth 2
           echo kBSD in ${GITHUB_WORKSPACE}/kbsd
           find ${GITHUB_WORKSPACE}/kbsd -maxdepth 2
-          echo FreeBSD releng/14.1 in ${GITHUB_WORKSPACE}/freebsd-src
-          find ${GITHUB_WORKSPACE}/freebsd-src -maxdepth 2
+          echo FreeBSD releng/14.1 in ${GITHUB_WORKSPACE}/src
+          find ${GITHUB_WORKSPACE}/src -maxdepth 2
       
       - name: bootstrap bmake
+        working-directory: ./src
         run: ./tools/build/make.py --debug $EXTRA_BUILD_ARGS TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} -n
       - name: make kernel-toolchain
+        working-directory: ./src
         run: ./tools/build/make.py --debug $EXTRA_BUILD_ARGS TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} -s -j$NPROC kernel-toolchain  -DWITH_DISK_IMAGE_TOOLS_BOOTSTRAP
       # - name: make buildworld
       #   run: ./tools/build/make.py --debug $EXTRA_BUILD_ARGS TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} buildworld -s -j$NPROC $EXTRA_MAKE_ARGS
       - name: make buildkernel
+        working-directory: ./src
         run: ./tools/build/make.py --debug $EXTRA_BUILD_ARGS TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} -s -j$NPROC buildkernel KERNCONF=GENERIC NO_MODULES=yes $EXTRA_MAKE_ARGS
     
       - name: tar build-artefacts

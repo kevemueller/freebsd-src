@@ -23,10 +23,10 @@ jobs:
       matrix:
         target_arch: 
           - amd64
-          # - aarch64
+          - aarch64
         os: 
           - macos-latest
-          # - ubuntu-24.04
+          - ubuntu-24.04
         include:
           - os: ubuntu-24.04
             compiler: clang-18

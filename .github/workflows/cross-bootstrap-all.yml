@@ -23,20 +23,22 @@ jobs:
       matrix:
         target_arch: 
           - amd64
-          # - aarch64
+          - aarch64
         os: 
           - macos-latest
-          # - ubuntu-24.04
+          - ubuntu-24.04
         include:
           - os: ubuntu-24.04
             compiler: clang-18
-            cross-bindir: /usr/lib/llvm-18/bin
             pkgs: libarchive-dev clang-18 lld-18
+            cross-bindir: /usr/lib/llvm-18/bin
+            cross-ld: /usr/lib/llvm-18/bin/ld.lld
           - os: macos-latest
             compiler: clang-18
             # llbm/llvm@19 too strict to compile kernel on amd64
             pkgs: libarchive llvm@18 lld
             cross-bindir: /opt/homebrew/opt/llvm@18/bin
+            cross-ld: /opt/homebrew/opt/lld/bin/ld.lld
           - target_arch: amd64
             target: amd64
           - target_arch: aarch64
@@ -61,28 +63,33 @@ jobs:
         run: |
           brew update --quiet || true
           brew install ${{ matrix.pkgs }} || true
-          echo "XLD=/opt/homebrew/opt/lld/bin/ld.lld" >> $GITHUB_ENV
       - name: create environment
         run: |
+          echo "CWD = $PWD"
           echo "GITHUB_WORKSPACE = $GITHUB_WORKSPACE"
-          if [ -n "${{ matrix.cross-bindir }}" ]; then
-            echo "EXTRA_BUILD_ARGS=--cross-bindir=${{ matrix.cross-bindir }}" >> $GITHUB_ENV
-          fi
+          echo Using Cross-dir ${{ matrix.cross-bindir }}
+          echo Using Cross-ld  ${{ matrix.cross-ld }}
+          echo "EXTRA_BUILD_ARGS=--cross-bindir=${{ matrix.cross-bindir }}" >> $GITHUB_ENV
+          echo "XLD={{ matrix.cross-ld}}" >> $GITHUB_ENV
           mkdir -p ../build
           echo "MAKEOBJDIRPREFIX=${PWD%/*}/build" >> $GITHUB_ENV
           echo "NPROC=`getconf _NPROCESSORS_ONLN 2>/dev/null || getconf NPROCESSORS_ONLN 2>/dev/null || echo 1`" >> $GITHUB_ENV
       - name: bootstrap bmake
         run: ./tools/build/make.py --debug $EXTRA_BUILD_ARGS TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} -n
-      - name: make kernel-toolchain
-        run: ./tools/build/make.py --debug $EXTRA_BUILD_ARGS TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} kernel-toolchain -s -j$NPROC -DWITH_DISK_IMAGE_TOOLS_BOOTSTRAP
-      - name: make buildworld
-        run: ./tools/build/make.py --debug $EXTRA_BUILD_ARGS TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} buildworld -s -j$NPROC $EXTRA_MAKE_ARGS
+      # - name: make kernel-toolchain
+      #   run: ./tools/build/make.py --debug $EXTRA_BUILD_ARGS TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} kernel-toolchain -s -j$NPROC -DWITH_DISK_IMAGE_TOOLS_BOOTSTRAP
+      # - name: make buildworld
+      #   run: ./tools/build/make.py --debug $EXTRA_BUILD_ARGS TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} buildworld -s -j$NPROC $EXTRA_MAKE_ARGS
       - name: make buildkernel
         run: ./tools/build/make.py --debug $EXTRA_BUILD_ARGS TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} KERNCONF=GENERIC NO_MODULES=yes buildkernel -s -j$NPROC $EXTRA_MAKE_ARGS
+    
+      - name: tar build-artefacts
+        run: tar -cvf ../build-${{ matrix.target_arch }}-${{ matrix.os }}-${{ matrix.compiler }}.tar -C ../build
+          
       - name: Archive build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.target_arch }}-${{ matrix.os }}-${{ matrix.compiler }}
-          path: .
+          path: ../build-${{ matrix.target_arch }}-${{ matrix.os }}-${{ matrix.compiler }}.tar
           retention-days: 10
           overwrite: true

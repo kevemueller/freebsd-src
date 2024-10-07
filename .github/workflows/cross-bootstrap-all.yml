@@ -44,6 +44,14 @@ jobs:
           - target_arch: aarch64
             target: arm64
     steps:
+      - name: trigger
+        run: |
+          echo github_repository=${{ github.repository }}
+          echo ${{ github }}
+          echo ${{ inputs }}
+          echo ${{ env }}
+          echo ${{ job }}
+          echo ${{ vars }}
       - name: checkout kbsd
         uses: actions/checkout@v4
         with:
@@ -81,11 +89,11 @@ jobs:
           echo Using MAKEOBJDIRPREFIX=${MAKEOBJDIRPREFIX}
           echo Using NPROC=${NPROC}
           echo Using EXTRA_MAKE_ARGS=${EXTRA_MAKE_ARGS}
-          find .. -type d -depth 3
-          echo kBSD in $PWD/kbsd
-          find kbsd -depth 2
-          echo FreeBSD releng/14.1 in $PWD/freebsd-src
-          find freebsd-src -depth 2
+          find .. -type d -maxdepth 2
+          echo kBSD in ${GITHUB_WORKSPACE}/kbsd
+          find ${GITHUB_WORKSPACE}/kbsd -maxdepth 2
+          echo FreeBSD releng/14.1 in ${GITHUB_WORKSPACE}/freebsd-src
+          find ${GITHUB_WORKSPACE}/freebsd-src -maxdepth 2
       
       - name: bootstrap bmake
         run: ./tools/build/make.py --debug $EXTRA_BUILD_ARGS TARGET=${{ matrix.target }} TARGET_ARCH=${{ matrix.target_arch }} -n

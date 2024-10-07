@@ -1,4 +1,4 @@
-name: Cross-build All
+name: Cross-build Env
 
 on:
   push:
@@ -25,8 +25,8 @@ jobs:
           - amd64
           # - aarch64
         os: 
-          # - ubuntu-24.04
           - macos-latest
+          # - ubuntu-24.04
         include:
           - os: ubuntu-24.04
             compiler: clang-18
